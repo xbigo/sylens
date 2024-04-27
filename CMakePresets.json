@@ -1,0 +1,114 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "include": [
+        "3rd/ape/libs/amun/lib/amun/CMakePresets.json"
+    ],
+    "configurePresets": [],
+    "buildPresets": [
+        {
+            "name": "clang_debug",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_debug",
+            "jobs": 8
+        },
+        {
+            "name": "gcc_debug",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_debug",
+            "jobs": 8
+        },
+        {
+            "name": "clang_release",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_release",
+            "jobs": 8
+        },
+        {
+            "name": "gcc_release",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_release",
+            "jobs": 8
+        },
+        {
+            "name": "gcc_debug_with_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_debug_test",
+            "jobs": 8
+        },
+        {
+            "name": "clang_debug_with_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_debug_test",
+            "jobs": 8
+        },
+        {
+            "name": "gcc_release_with_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_release_test",
+            "jobs": 8
+        },
+        {
+            "name": "clang_release_with_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_release_test",
+            "jobs": 8
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "gcc_debug_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_debug_test"
+        },
+        {
+            "name": "gcc_release_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_release_test"
+        },
+        {
+            "name": "clang_debug_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_debug_test"
+        },
+        {
+            "name": "clang_release_test",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_release_test"
+        },
+        {
+            "name": "gcc_benchmark",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "gcc_release_test",
+            "environment": {
+                "TEST_CASE_FILTER": "[!benchmark]"
+            }
+        },
+        {
+            "name": "clang_benchmark",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "clang_release_test",
+            "environment": {
+                "TEST_CASE_FILTER": "[!benchmark]"
+            }
+        }
+    ]
+}
