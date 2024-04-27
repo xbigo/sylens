@@ -1,0 +1,4 @@
+
+[submodule "3rd/ape"]
+	path = 3rd/ape
+	url = ../../xbigo/ape.git
