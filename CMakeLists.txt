@@ -4,6 +4,9 @@ project(Sylens
 	VERSION "0.0.1"
     DESCRIPTION "Computer Graphics Learning Project"
 	LANGUAGES CXX)
+if (POLICY CMP0144)
+  cmake_policy(SET CMP0144 OLD)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rd/ape/libs/amun/lib/amun)
 
@@ -38,6 +41,9 @@ if(FALSE)
 endif()
 
 amun_enable_testing()
+
+find_package(Vulkan REQUIRED)
+find_package(Boost REQUIRED)
 
 add_subdirectory(3rd/ape)
 add_subdirectory(src/sylens)

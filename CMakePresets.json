@@ -8,62 +8,125 @@
     "include": [
         "3rd/ape/libs/amun/lib/amun/CMakePresets.json"
     ],
-    "configurePresets": [],
+    "configurePresets": [
+        {
+            "name": "vulkan",
+            "displayName": "Vulkan",
+            "description": "",
+            "hidden": true,
+            "environment": {
+                "VULKAN_SDK": "/home/finger/code/wingfiring/vulkan-sdk/1.3.280.1/x86_64"
+            },
+            "cacheVariables": {
+                "BOOST_ROOT" :"/home/finger/code/3p/boost_1_85_0",
+                "Boost_NO_SYSTEM_PATHS": "ON"
+            }
+        },
+
+        {
+            "name": "vulkan_gcc_debug",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["gcc_debug", "vulkan"]
+        },
+        {
+            "name": "vulkan_gcc_release",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["gcc_release", "vulkan"]
+        },
+        {
+            "name": "vulkan_clang_debug",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["clang_debug", "vulkan"]
+        },
+        {
+            "name": "vulkan_clang_release",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["clang_release", "vulkan"]
+        },
+        {
+            "name": "vulkan_gcc_debug_test",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["gcc_debug_test", "vulkan"]
+        },
+        {
+            "name": "vulkan_gcc_release_test",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["gcc_release_test", "vulkan"]
+        },
+        {
+            "name": "vulkan_clang_debug_test",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["clang_debug_test", "vulkan"]
+        },
+        {
+            "name": "vulkan_clang_release_test",
+            "displayName": "",
+            "description": "",
+            "inherits" : ["clang_release_test", "vulkan"]
+        }
+    ],
     "buildPresets": [
         {
             "name": "clang_debug",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_debug",
+            "configurePreset": "vulkan_clang_debug",
             "jobs": 8
         },
         {
             "name": "gcc_debug",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_debug",
+            "configurePreset": "vulkan_gcc_debug",
             "jobs": 8
         },
         {
             "name": "clang_release",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_release",
+            "configurePreset": "vulkan_clang_release",
             "jobs": 8
         },
         {
             "name": "gcc_release",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_release",
+            "configurePreset": "vulkan_gcc_release",
             "jobs": 8
         },
         {
             "name": "gcc_debug_with_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_debug_test",
+            "configurePreset": "vulkan_gcc_debug_test",
             "jobs": 8
         },
         {
             "name": "clang_debug_with_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_debug_test",
+            "configurePreset": "vulkan_clang_debug_test",
             "jobs": 8
         },
         {
             "name": "gcc_release_with_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_release_test",
+            "configurePreset": "vulkan_gcc_release_test",
             "jobs": 8
         },
         {
             "name": "clang_release_with_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_release_test",
+            "configurePreset": "vulkan_clang_release_test",
             "jobs": 8
         }
     ],
@@ -72,31 +135,31 @@
             "name": "gcc_debug_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_debug_test"
+            "configurePreset": "vulkan_gcc_debug_test"
         },
         {
             "name": "gcc_release_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_release_test"
+            "configurePreset": "vulkan_gcc_release_test"
         },
         {
             "name": "clang_debug_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_debug_test"
+            "configurePreset": "vulkan_clang_debug_test"
         },
         {
             "name": "clang_release_test",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_release_test"
+            "configurePreset": "vulkan_clang_release_test"
         },
         {
             "name": "gcc_benchmark",
             "description": "",
             "displayName": "",
-            "configurePreset": "gcc_release_test",
+            "configurePreset": "vulkan_gcc_release_test",
             "environment": {
                 "TEST_CASE_FILTER": "[!benchmark]"
             }
@@ -105,7 +168,7 @@
             "name": "clang_benchmark",
             "description": "",
             "displayName": "",
-            "configurePreset": "clang_release_test",
+            "configurePreset": "vulkan_clang_release_test",
             "environment": {
                 "TEST_CASE_FILTER": "[!benchmark]"
             }
