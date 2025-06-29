@@ -762,7 +762,7 @@ namespace sylens
         vk::CommandBufferAllocateInfo allocInfo(
             commandPool_,
             vk::CommandBufferLevel::ePrimary,       //level
-            1               //commandBufferCount_
+            max_frame_in_flight               //commandBufferCount_
         );
         commandBuffer_ = device_.allocateCommandBuffers(allocInfo);
     }
@@ -801,23 +801,26 @@ namespace sylens
         vk::SemaphoreCreateInfo semaphoreInfo;
         vk::FenceCreateInfo fenceInfo(vk::FenceCreateFlagBits::eSignaled);
 
-        imageAvailableSemaphore_ = device_.createSemaphore(semaphoreInfo);
-        renderFinishedSemaphore_ = device_.createSemaphore(semaphoreInfo);
-        inFlightFence_ = device_.createFence(fenceInfo);
+        for(int i = 0; i < max_frame_in_flight; ++i)
+        {
+            imageAvailableSemaphore_.emplace_back(device_.createSemaphore(semaphoreInfo));
+            renderFinishedSemaphore_.emplace_back(device_.createSemaphore(semaphoreInfo));
+            inFlightFence_.emplace_back(device_.createFence(fenceInfo));
+        }
     }
 
     void VulkanApp::drawFrame()
     {
-        auto result1 = device_.waitForFences(*inFlightFence_, vk::True, UINT64_MAX);
+        auto result1 = device_.waitForFences(*inFlightFence_[currentFrame_], vk::True, UINT64_MAX);
         if (vk::Result::eSuccess != result1)
         {
             throw std::runtime_error("device_.waitForFences");
         }
-        device_.resetFences(*inFlightFence_);
+        device_.resetFences(*inFlightFence_[currentFrame_]);
 
-        auto [result, imageIndex] = swapChain_.acquireNextImage(UINT64_MAX, imageAvailableSemaphore_,  VK_NULL_HANDLE);
+        auto [result, imageIndex] = swapChain_.acquireNextImage(UINT64_MAX, imageAvailableSemaphore_[currentFrame_],  VK_NULL_HANDLE);
 
-        auto& buffer = commandBuffer_.front();
+        auto& buffer = commandBuffer_[currentFrame_];
         buffer.reset();
         recordCommandBuffer(buffer, imageIndex);
 
@@ -825,25 +828,31 @@ namespace sylens
             
         vk::SubmitInfo submitInfo(
             1,
-            &*imageAvailableSemaphore_,
+            &*imageAvailableSemaphore_[currentFrame_],
             waitStages,
             1,
             &*buffer,
             1,
-            &*renderFinishedSemaphore_            
+            &*renderFinishedSemaphore_[currentFrame_]            
         );
 
-        graphicsQueue_.submit(submitInfo, inFlightFence_);
+        graphicsQueue_.submit(submitInfo, inFlightFence_[currentFrame_]);
 
         vk::PresentInfoKHR presentInfo(
             1,
-            &*renderFinishedSemaphore_,
+            &*renderFinishedSemaphore_[currentFrame_],
             1,
             &*swapChain_,
             &imageIndex
         );
         auto result2 = presentQueue_.presentKHR(presentInfo);
 
+        currentFrame_ = (currentFrame_ + 1) % max_frame_in_flight;
+    }
+    void VulkanApp::waitOnIdle()
+    {
+        //vkDeviceWaitIdle(device_);
+        device_.waitIdle();
     }
 
     bool isGraphicsDevice(const vkr::PhysicalDevice &d)

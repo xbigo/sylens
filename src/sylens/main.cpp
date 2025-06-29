@@ -42,6 +42,7 @@ int main(){
     auto test = matrix * vec;
 #endif
     app.loop(window, [&](){vulkan.drawFrame();});
+    vulkan.waitOnIdle();
     
     return 0;
 }

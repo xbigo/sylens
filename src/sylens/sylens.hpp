@@ -86,6 +86,9 @@ namespace sylens
         VkSurfaceKHR surface_{};
 
     };
+
+
+    inline constexpr int max_frame_in_flight = 3;
     class VulkanApp
     {
         vkr::Context  context_;
@@ -115,10 +118,10 @@ namespace sylens
         std::vector<vkr::CommandBuffer> commandBuffer_;
 
 
-        vkr::Semaphore imageAvailableSemaphore_{nullptr};
-        vkr::Semaphore renderFinishedSemaphore_{nullptr};
-        vkr::Fence inFlightFence_{nullptr};
+        std::vector<vkr::Semaphore> imageAvailableSemaphore_, renderFinishedSemaphore_;
+        std::vector<vkr::Fence> inFlightFence_;
 
+        std::size_t currentFrame_{0};
     public:
         explicit VulkanApp(const std::string& appname = "vulkanApp",
          const std::string& engine_name = "vulkan",
@@ -152,6 +155,8 @@ namespace sylens
         void recordCommandBuffer(vkr::CommandBuffer& buffer, uint32_t imageIndex);
 
         void drawFrame();
+
+        void waitOnIdle();
     };
 
     constexpr uint32_t K_DefaultWidth = 800;
