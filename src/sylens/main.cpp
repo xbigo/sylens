@@ -9,18 +9,18 @@ int main(){
 
     auto window = sylens::window::builder(glfw)
         .hint(sylens::window_hint{GLFW_CLIENT_API, GLFW_NO_API})
-        .hint(sylens::window_hint{GLFW_RESIZABLE, GLFW_FALSE})
+        .hint(sylens::window_hint{GLFW_RESIZABLE, GLFW_TRUE})
         .title("Vulkan window")
         .size(sylens::screen_size{800, 600})
         .make();
 
     sylens::application app{glfw};
 
-    sylens::VulkanApp vulkan;
+    sylens::VulkanApp vulkan(&window);
     {
         
         vulkan.dump(std::cout);
-        vulkan.createSurface1(window);
+        vulkan.createSurface1();
         vulkan.createDevice();
 
         vulkan.createSwapchain();

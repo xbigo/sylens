@@ -172,6 +172,12 @@ namespace sylens
     window::window(ape::own_ptr<GLFWwindow>&& pw)
         : handle(std::move(pw))
     {
+        glfwSetWindowUserPointer(handle.get(), this);
+        glfwSetFramebufferSizeCallback(handle.get(), [](GLFWwindow* w, int width, int height){
+            auto self = reinterpret_cast<window*>(glfwGetWindowUserPointer(w));
+            if (self->onResize)
+                self->onResize(w, width, height);
+        });
     }
     window::~window(){
         glfwDestroyWindow(handle.get());
@@ -220,8 +226,8 @@ namespace sylens
 
     VulkanApp::~VulkanApp(){
     }
-    VulkanApp::VulkanApp(const std::string& appname, const std::string& engine_name, bool enable_debug, uint32_t api_version)
-    : enable_debug_(enable_debug)
+    VulkanApp::VulkanApp(window* w, const std::string& appname, const std::string& engine_name, bool enable_debug, uint32_t api_version)
+    : window_(w), enable_debug_(enable_debug)
     {
         vk::ApplicationInfo applicationInfo( appname.c_str(), 1, engine_name.c_str(), 1, api_version );
         std::vector<std::string> layers, extensions;
@@ -237,6 +243,15 @@ namespace sylens
 
         if (enable_debug)
             setDebugMessenger({});
+        
+        if (window_)
+        {
+            window_->onResize = [this](GLFWwindow* /* window */, int width, int height){
+                this->extent_.width = width;
+                this->extent_.height = height; 
+                framebufferResized_ = true;
+            };
+        }
     }
 
     void VulkanApp::setDebugMessenger(DebugMessenger_t f)
@@ -392,13 +407,13 @@ namespace sylens
 
 #endif
 
-    void VulkanApp::createSurface1(const window& w)
+    void VulkanApp::createSurface1()
     {
         //vk::SurfaceKHR surface;
         VkSurfaceKHR surface;
         auto result = glfwCreateWindowSurface(
             *instance_,
-            w.raw_handle(),
+            window_->raw_handle(),
             nullptr,
             &surface
         );
@@ -503,8 +518,11 @@ namespace sylens
 
         extent_ = capabilities.currentExtent;
         if (extent_.width == std::numeric_limits<uint32_t>::max()) {
-            extent_.width =  std::clamp(K_DefaultWidth, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-            extent_.height =  std::clamp(K_DefaultHeight, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+            int width, height;
+            glfwGetFramebufferSize(window_->raw_handle(), &width, &height);
+
+            extent_.width =  std::clamp(static_cast<uint32_t>(width), capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            extent_.height =  std::clamp(static_cast<uint32_t>(height), capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
         }
 
         surfaceFormat_ = formats.front();
@@ -656,10 +674,10 @@ namespace sylens
         vk::PipelineVertexInputStateCreateInfo vertexInputInfo;
         vk::PipelineInputAssemblyStateCreateInfo inputAssembly({}, vk::PrimitiveTopology::eTriangleList);
 
-        vk::Viewport viewport(0.f, 0.f, float(extent_.width), float(extent_.height), 0.f, 1.f);
-        vk::Rect2D scissor({0, 0}, extent_);
-
-        vk::PipelineViewportStateCreateInfo viewportState({}, 1, &viewport, 1, &scissor);
+        //vk::Viewport viewport(0.f, 0.f, float(extent_.width), float(extent_.height), 0.f, 1.f);
+        //vk::Rect2D scissor({0, 0}, extent_);
+        //vk::PipelineViewportStateCreateInfo viewportState({}, 1, &viewport, 1, &scissor);
+        vk::PipelineViewportStateCreateInfo viewportState({}, 1, nullptr, 1, nullptr);
 
         vk::PipelineRasterizationStateCreateInfo rasterizer({}, 
             VK_FALSE,   //depthClampEnable_
@@ -816,9 +834,19 @@ namespace sylens
         {
             throw std::runtime_error("device_.waitForFences");
         }
-        device_.resetFences(*inFlightFence_[currentFrame_]);
+        
 
         auto [result, imageIndex] = swapChain_.acquireNextImage(UINT64_MAX, imageAvailableSemaphore_[currentFrame_],  VK_NULL_HANDLE);
+        if (result == vk::Result::eErrorOutOfDateKHR || framebufferResized_ == true)
+        {
+            recreateSwapChain();
+            framebufferResized_ = false;
+            return;
+        }
+        else if(result != vk::Result::eSuccess && result != vk::Result::eSuboptimalKHR)
+        {
+            throw std::runtime_error("failed to acquire swap chain image!");
+        }
 
         auto& buffer = commandBuffer_[currentFrame_];
         buffer.reset();
@@ -836,6 +864,7 @@ namespace sylens
             &*renderFinishedSemaphore_[currentFrame_]            
         );
 
+        device_.resetFences(*inFlightFence_[currentFrame_]);
         graphicsQueue_.submit(submitInfo, inFlightFence_[currentFrame_]);
 
         vk::PresentInfoKHR presentInfo(
@@ -846,9 +875,46 @@ namespace sylens
             &imageIndex
         );
         auto result2 = presentQueue_.presentKHR(presentInfo);
+        if (result2 == vk::Result::eErrorOutOfDateKHR || result2 == vk::Result::eSuboptimalKHR || framebufferResized_)
+        {
+            recreateSwapChain();
+            framebufferResized_ = false;
+            return;
+        }
+        else if(result2 != vk::Result::eSuccess)
+        {
+            throw std::runtime_error("failed to present swap chain image!");
+        }
 
         currentFrame_ = (currentFrame_ + 1) % max_frame_in_flight;
     }
+    void VulkanApp::recreateSwapChain()
+    {
+        {
+            int width = 0, height = 0;
+            glfwGetFramebufferSize(window_->raw_handle(), &width, &height);
+            while (width == 0 || height == 0) {
+                glfwGetFramebufferSize(window_->raw_handle(), &width, &height);
+                glfwWaitEvents();
+            }
+        }
+
+        device_.waitIdle();
+
+        swapChainFramebuffers_.clear();
+        imageViews_.clear();
+        swapChain_.clear();
+        //pipelineLayout_.clear();
+        //renderPass_.clear();
+        //graphicsPipeline_.clear();
+        //commandBuffer_.clear();
+
+
+        createSwapchain();
+        //createImageViews();
+        createFramebuffers();
+    }
+
     void VulkanApp::waitOnIdle()
     {
         //vkDeviceWaitIdle(device_);

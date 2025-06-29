@@ -58,6 +58,7 @@ namespace sylens
             window make();
 
         };
+        std::function<void(GLFWwindow* window, int width, int height)> onResize;
     };
 
     using DebugMessenger_t = std::function<VkBool32(
@@ -91,6 +92,7 @@ namespace sylens
     inline constexpr int max_frame_in_flight = 3;
     class VulkanApp
     {
+        window* window_{nullptr};
         vkr::Context  context_;
         vkr::Instance instance_{nullptr};
         vkr::DebugUtilsMessengerEXT debug_messenger_{nullptr};
@@ -122,11 +124,13 @@ namespace sylens
         std::vector<vkr::Fence> inFlightFence_;
 
         std::size_t currentFrame_{0};
+        bool framebufferResized_ = false;
     public:
-        explicit VulkanApp(const std::string& appname = "vulkanApp",
-         const std::string& engine_name = "vulkan",
-         bool enable_debug = true,
-         uint32_t api_version = VK_API_VERSION_1_3);
+        explicit VulkanApp(window* w = nullptr, 
+            const std::string& appname = "vulkanApp",
+            const std::string& engine_name = "vulkan",
+            bool enable_debug = true,
+            uint32_t api_version = VK_API_VERSION_1_3);
         ~VulkanApp();
 
         
@@ -141,10 +145,10 @@ namespace sylens
 
     //private:
         void createDevice();
-        void createSurface1(const window& w);
+        void createSurface1();
         void createSurface2();
 
-        void createSwapchain();\
+        void createSwapchain();
         void createRenderPass();
         void createPipeline();
         void createFramebuffers();
@@ -157,6 +161,8 @@ namespace sylens
         void drawFrame();
 
         void waitOnIdle();
+
+        void recreateSwapChain();
     };
 
     constexpr uint32_t K_DefaultWidth = 800;
