@@ -16,11 +16,20 @@ int main(){
 
     sylens::application app{glfw};
 
+    sylens::VulkanApp vulkan;
     {
-        sylens::VulkanApp vulkan;
+        
         vulkan.dump(std::cout);
         vulkan.createSurface1(window);
         vulkan.createDevice();
+
+        vulkan.createSwapchain();
+        vulkan.createRenderPass();
+        vulkan.createPipeline();
+        vulkan.createFramebuffers();
+        vulkan.createCommandPool();
+        vulkan.createCommandBuffer();
+        vulkan.createSyncObjects();
 
     }
 #if 0
@@ -32,7 +41,7 @@ int main(){
     glm::vec4 vec{};
     auto test = matrix * vec;
 #endif
-    app.loop(window);
+    app.loop(window, [&](){vulkan.drawFrame();});
     
     return 0;
 }

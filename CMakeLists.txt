@@ -44,6 +44,7 @@ amun_enable_testing()
 
 find_package(Vulkan REQUIRED)
 find_package(Boost REQUIRED)
+find_package(glfw3 REQUIRED)
 
 add_subdirectory(3rd/ape)
 add_subdirectory(src/sylens)

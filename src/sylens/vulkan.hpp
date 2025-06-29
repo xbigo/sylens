@@ -1,9 +1,12 @@
 #pragma once
 
-#define VK_USE_PLATFORM_XCB_KHR
+//#define VK_USE_PLATFORM_XCB_KHR
+#define VK_USE_PLATFORM_WIN32_KHR
+
 //#define VK_USE_PLATFORM_XLIB_KHR
 #define GLFW_INCLUDE_VULKAN
-#define GLFW_EXPOSE_NATIVE_X11
+//#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_WIN32
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>

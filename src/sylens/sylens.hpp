@@ -61,9 +61,9 @@ namespace sylens
     };
 
     using DebugMessenger_t = std::function<VkBool32(
-        VkDebugUtilsMessageSeverityFlagBitsEXT,
-        VkDebugUtilsMessageTypeFlagsEXT,
-        const VkDebugUtilsMessengerCallbackDataEXT *)>;
+        vk::DebugUtilsMessageSeverityFlagBitsEXT,
+        vk::DebugUtilsMessageTypeFlagsEXT,
+        const vk::DebugUtilsMessengerCallbackDataEXT *)>;
 
     class VulkanDevice // move only
     {
@@ -97,9 +97,28 @@ namespace sylens
         vkr::Device device_{nullptr};
         vkr::Queue graphicsQueue_{nullptr};
         vkr::Queue presentQueue_{nullptr};
+        
         vkr::SwapchainKHR swapChain_{nullptr};
         std::vector<vk::Image> images_;
-        std::vector<vk::ImageView> imageViews_;
+        std::vector<vkr::ImageView> imageViews_;
+        vk::Extent2D extent_{};
+        //vk::Format swapChainImageFormat_{};
+        vk::SurfaceFormatKHR surfaceFormat_{};
+
+        vkr::ShaderModule vertShaderModule{nullptr}, fragShaderModule{nullptr};
+        vkr::PipelineLayout pipelineLayout_{nullptr};
+        vkr::RenderPass renderPass_{nullptr};
+        std::vector<vkr::Pipeline> graphicsPipeline_;
+
+        std::vector<vkr::Framebuffer> swapChainFramebuffers_;
+        vkr::CommandPool commandPool_{nullptr};
+        std::vector<vkr::CommandBuffer> commandBuffer_;
+
+
+        vkr::Semaphore imageAvailableSemaphore_{nullptr};
+        vkr::Semaphore renderFinishedSemaphore_{nullptr};
+        vkr::Fence inFlightFence_{nullptr};
+
     public:
         explicit VulkanApp(const std::string& appname = "vulkanApp",
          const std::string& engine_name = "vulkan",
@@ -122,9 +141,19 @@ namespace sylens
         void createSurface1(const window& w);
         void createSurface2();
 
-        void createSwapchain();
+        void createSwapchain();\
+        void createRenderPass();
         void createPipeline();
+        void createFramebuffers();
+        void createCommandPool();
+        void createCommandBuffer();
+        void createSyncObjects();
+
+        void recordCommandBuffer(vkr::CommandBuffer& buffer, uint32_t imageIndex);
+
+        void drawFrame();
     };
+
     constexpr uint32_t K_DefaultWidth = 800;
     constexpr uint32_t K_DefaultHeight = 600;
 
@@ -136,7 +165,7 @@ namespace sylens
         public:
         explicit application(glfw& g);
         ~application();
-        void loop(window& w);
+        void loop(window& w, std::function<void()> draw);
 
         private:
         void init_();
